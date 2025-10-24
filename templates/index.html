@@ -3,24 +3,24 @@
 {% block content %}
   <section class="controls glass">
     <div class="controls__inner">
-      <label class="controls__label" for="city-select">&#36873;&#25321;&#27743;&#35199;&#30465;&#22478;&#24066; / &#21439;&#21306;</label>
+      <label class="controls__label" for="city-select">📍 选择江西省市县</label>
       <input
         id="city-search"
         class="city-search"
         type="text"
-        placeholder="&#36755;&#20837;&#22478;&#24066;&#25110;&#21439;&#21306;&#36895;&#26597;"
-        aria-label="&#36755;&#20837;&#22478;&#24066;&#25110;&#21439;&#21306;&#36895;&#26597;"
+        placeholder="🔍 输入城市或县区名称快速查找..."
+        aria-label="输入城市或县区速查"
         autocomplete="off"
       >
       <div class="control-row">
-        <select id="city-select" aria-label="&#36873;&#25321;&#27743;&#35199;&#30465;&#22478;&#24066;&#25110;&#21439;&#21306;">
+        <select id="city-select" aria-label="选择江西省城市或县区">
           {% for location in locations %}
             <option value="{{ location.id }}" {% if location.id == default_location.id %}selected{% endif %}>
-              {{ location.province }} &#183; {{ location.city }}
+              {{ location.city }}
             </option>
           {% endfor %}
         </select>
-        <button id="refresh-btn" type="button">刷新天气</button>
+        <button id="refresh-btn" type="button">🔄 刷新天气</button>
       </div>
     </div>
   </section>
@@ -126,7 +126,7 @@
   ]);
 
   function createOptionLabel(location) {
-    return `${location.province} ${DOT} ${location.city}`;
+    return location.city;
   }
 
   function formatNumber(value, digits = 1) {
