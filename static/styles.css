@@ -92,28 +92,6 @@ a:hover {
   gap: 1rem;
 }
 
-.controls__label {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background: linear-gradient(135deg, rgba(53, 109, 255, 0.15), rgba(104, 222, 250, 0.15));
-  border-radius: 12px;
-  border: 2px solid rgba(53, 109, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(53, 109, 255, 0.15);
-  transition: all 0.3s ease;
-}
-
-.controls__label:hover {
-  background: linear-gradient(135deg, rgba(53, 109, 255, 0.25), rgba(104, 222, 250, 0.25));
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(53, 109, 255, 0.25);
-}
-
 .control-row {
   display: flex;
   flex-wrap: wrap;
@@ -602,11 +580,6 @@ button:active {
 
   .controls {
     padding: 1.5rem;
-  }
-
-  .controls__label {
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
   }
 
   select {
