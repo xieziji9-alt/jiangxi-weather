@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>江西省天气预报</title>
+    <link rel="stylesheet" href="static/styles.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <h1 class="page-title">🌤️ 江西省天气预报</h1>
+      <p class="page-subtitle">实时天气 · 未来 5 日预报 · 覆盖全省市县</p>
+    </header>
+    <main class="page-main">
+      <section class="controls glass">
+        <div class="controls__inner">
+          <label class="controls__label" for="city-select">📍 选择江西省市县</label>
+          <input
+            id="city-search"
+            class="city-search"
+            type="text"
+            placeholder="🔍 输入城市或县区名称快速查找..."
+            aria-label="输入城市或县区速查"
+            autocomplete="off"
+          >
+          <div class="control-row">
+            <select id="city-select" aria-label="选择江西省城市或县区">
+              <!-- Options will be populated by JavaScript -->
+            </select>
+            <button id="refresh-btn" type="button">🔄 刷新天气</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="weather-display" class="weather-display glass" style="display: none;">
+        <div class="weather-hero">
+          <div class="weather-hero__location">
+            <h2 id="location-name">--</h2>
+          </div>
+          <div class="weather-hero__current">
+            <div class="current-temp">
+              <span id="current-temperature" class="current-temp__value">--</span>
+              <span class="current-temp__unit">°C</span>
+            </div>
+            <div id="current-weather" class="current-weather">--</div>
+          </div>
+          <div class="weather-hero__details">
+            <div class="detail-item">
+              <span class="detail-label">体感温度</span>
+              <span id="feels-like" class="detail-value">--°C</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">湿度</span>
+              <span id="humidity" class="detail-value">--%</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">风速</span>
+              <span id="wind-speed" class="detail-value">-- km/h</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="forecast">
+          <h3 class="forecast__title">未来 5 日预报</h3>
+          <div id="forecast-list" class="forecast__list">
+            <!-- Forecast items will be populated by JavaScript -->
+          </div>
+        </div>
+      </section>
+
+      <section id="error-display" class="error-display" style="display: none;">
+        <p id="error-message"></p>
+      </section>
+    </main>
+    <footer class="page-footer">
+      <small>数据来源：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo 免费天气服务</a></small>
+    </footer>
+
+    <script>
+      // Location data
+      const LOCATIONS = [
+        {"id": "nanchang", "province": "江西省", "city": "南昌市"},
+        {"id": "donghu", "province": "江西省", "city": "东湖区"},
+        {"id": "xihu", "province": "江西省", "city": "西湖区"},
+        {"id": "qingyunpu", "province": "江西省", "city": "青云谱区"},
+        {"id": "qingshanhu", "province": "江西省", "city": "青山湖区"},
+        {"id": "xinjian", "province": "江西省", "city": "新建区"},
+        {"id": "nanchang_county", "province": "江西省", "city": "南昌县"},
+        {"id": "anyi", "province": "江西省", "city": "安义县"},
+        {"id": "jinxian", "province": "江西省", "city": "进贤县"},
+        {"id": "jiujiang", "province": "江西省", "city": "九江市"},
+        {"id": "xunyang", "province": "江西省", "city": "浔阳区"},
+        {"id": "lianxi", "province": "江西省", "city": "濂溪区"},
+        {"id": "chaisang", "province": "江西省", "city": "柴桑区"},
+        {"id": "wuning", "province": "江西省", "city": "武宁县"},
+        {"id": "xiushui", "province": "江西省", "city": "修水县"},
+        {"id": "yongxiu", "province": "江西省", "city": "永修县"},
+        {"id": "dean", "province": "江西省", "city": "德安县"},
+        {"id": "duchang", "province": "江西省", "city": "都昌县"},
+        {"id": "hukou", "province": "江西省", "city": "湖口县"},
+        {"id": "pengze", "province": "江西省", "city": "彭泽县"},
+        {"id": "ruichang", "province": "江西省", "city": "瑞昌市"},
+        {"id": "gongqingcheng", "province": "江西省", "city": "共青城市"},
+        {"id": "lushan", "province": "江西省", "city": "庐山市"},
+        {"id": "shangrao", "province": "江西省", "city": "上饶市"},
+        {"id": "xinzhou", "province": "江西省", "city": "信州区"},
+        {"id": "guangfeng", "province": "江西省", "city": "广丰区"},
+        {"id": "guangxin", "province": "江西省", "city": "广信区"},
+        {"id": "yugan", "province": "江西省", "city": "余干县"},
+        {"id": "poyang", "province": "江西省", "city": "鄱阳县"},
+        {"id": "wannian", "province": "江西省", "city": "万年县"},
+        {"id": "wuyuan", "province": "江西省", "city": "婺源县"},
+        {"id": "dexing", "province": "江西省", "city": "德兴市"},
+        {"id": "yiyang", "province": "江西省", "city": "弋阳县"},
+        {"id": "hengfeng", "province": "江西省", "city": "横峰县"},
+        {"id": "qianshan", "province": "江西省", "city": "铅山县"},
+        {"id": "yushan", "province": "江西省", "city": "玉山县"},
+        {"id": "ganzhou", "province": "江西省", "city": "赣州市"},
+        {"id": "zhanggong", "province": "江西省", "city": "章贡区"},
+        {"id": "nankang", "province": "江西省", "city": "南康区"},
+        {"id": "ganxian", "province": "江西省", "city": "赣县区"},
+        {"id": "xinfeng", "province": "江西省", "city": "信丰县"},
+        {"id": "dayu", "province": "江西省", "city": "大余县"},
+        {"id": "shangyou", "province": "江西省", "city": "上犹县"},
+        {"id": "chongyi", "province": "江西省", "city": "崇义县"},
+        {"id": "anyuan", "province": "江西省", "city": "安远县"},
+        {"id": "longnan", "province": "江西省", "city": "龙南县"},
+        {"id": "dingnan", "province": "江西省", "city": "定南县"},
+        {"id": "quannan", "province": "江西省", "city": "全南县"},
+        {"id": "ningdu", "province": "江西省", "city": "宁都县"},
+        {"id": "yudu", "province": "江西省", "city": "于都县"},
+        {"id": "xingguo", "province": "江西省", "city": "兴国县"},
+        {"id": "huichang", "province": "江西省", "city": "会昌县"},
+        {"id": "xunwu", "province": "江西省", "city": "寻乌县"},
+        {"id": "shicheng", "province": "江西省", "city": "石城县"},
+        {"id": "ruijin", "province": "江西省", "city": "瑞金市"},
+        {"id": "jian", "province": "江西省", "city": "吉安市"},
+        {"id": "jizhou", "province": "江西省", "city": "吉州区"},
+        {"id": "qingyuan", "province": "江西省", "city": "青原区"},
+        {"id": "jishui", "province": "江西省", "city": "吉水县"},
+        {"id": "jian_county", "province": "江西省", "city": "吉安县"},
+        {"id": "xingan", "province": "江西省", "city": "新干县"},
+        {"id": "yongfeng", "province": "江西省", "city": "永丰县"},
+        {"id": "taihe", "province": "江西省", "city": "泰和县"},
+        {"id": "suichuan", "province": "江西省", "city": "遂川县"},
+        {"id": "wanan", "province": "江西省", "city": "万安县"},
+        {"id": "anfu", "province": "江西省", "city": "安福县"},
+        {"id": "yongxin", "province": "江西省", "city": "永新县"},
+        {"id": "jinggangshan", "province": "江西省", "city": "井冈山市"},
+        {"id": "yichun", "province": "江西省", "city": "宜春市"},
+        {"id": "yuanzhou", "province": "江西省", "city": "袁州区"},
+        {"id": "fengxin", "province": "江西省", "city": "奉新县"},
+        {"id": "wanzai", "province": "江西省", "city": "万载县"},
+        {"id": "shanggao", "province": "江西省", "city": "上高县"},
+        {"id": "yifeng", "province": "江西省", "city": "宜丰县"},
+        {"id": "jing_an", "province": "江西省", "city": "靖安县"},
+        {"id": "tonggu", "province": "江西省", "city": "铜鼓县"},
+        {"id": "fengcheng", "province": "江西省", "city": "丰城市"},
+        {"id": "zhangshu", "province": "江西省", "city": "樟树市"},
+        {"id": "gaoan", "province": "江西省", "city": "高安市"},
+        {"id": "fuzhou", "province": "江西省", "city": "抚州市"},
+        {"id": "linchuan", "province": "江西省", "city": "临川区"},
+        {"id": "dongxiang", "province": "江西省", "city": "东乡区"},
+        {"id": "nancheng", "province": "江西省", "city": "南城县"},
+        {"id": "lichuan", "province": "江西省", "city": "黎川县"},
+        {"id": "nanfeng", "province": "江西省", "city": "南丰县"},
+        {"id": "chongren", "province": "江西省", "city": "崇仁县"},
+        {"id": "lean", "province": "江西省", "city": "乐安县"},
+        {"id": "yihuang", "province": "江西省", "city": "宜黄县"},
+        {"id": "jinxi", "province": "江西省", "city": "金溪县"},
+        {"id": "zixi", "province": "江西省", "city": "资溪县"},
+        {"id": "guangchang", "province": "江西省", "city": "广昌县"},
+        {"id": "pingxiang", "province": "江西省", "city": "萍乡市"},
+        {"id": "anyuan_px", "province": "江西省", "city": "安源区"},
+        {"id": "xiangdong", "province": "江西省", "city": "湘东区"},
+        {"id": "lianhua", "province": "江西省", "city": "莲花县"},
+        {"id": "shangli", "province": "江西省", "city": "上栗县"},
+        {"id": "luxi", "province": "江西省", "city": "芦溪县"},
+        {"id": "xinyu", "province": "江西省", "city": "新余市"},
+        {"id": "yushui", "province": "江西省", "city": "渝水区"},
+        {"id": "fenyi", "province": "江西省", "city": "分宜县"},
+        {"id": "yingtan", "province": "江西省", "city": "鹰潭市"},
+        {"id": "yujiang", "province": "江西省", "city": "余江区"},
+        {"id": "guixi", "province": "江西省", "city": "贵溪市"},
+        {"id": "jingdezhen", "province": "江西省", "city": "景德镇市"},
+        {"id": "changjiang", "province": "江西省", "city": "昌江区"},
+        {"id": "zhushan", "province": "江西省", "city": "珠山区"},
+        {"id": "fuliang", "province": "江西省", "city": "浮梁县"},
+        {"id": "leping", "province": "江西省", "city": "乐平市"}
+      ];
+
+      const DOT = '·';
+      let allLocations = LOCATIONS;
+      let filteredLocations = LOCATIONS;
+
+      const citySelect = document.getElementById('city-select');
+      const citySearch = document.getElementById('city-search');
+      const refreshBtn = document.getElementById('refresh-btn');
+      const weatherDisplay = document.getElementById('weather-display');
+      const errorDisplay = document.getElementById('error-display');
+
+      function createOptionLabel(location) {
+        return location.city;
+      }
+
+      function populateSelect(locations) {
+        citySelect.innerHTML = '';
+        locations.forEach(loc => {
+          const option = document.createElement('option');
+          option.value = loc.id;
+          option.textContent = createOptionLabel(loc);
+          citySelect.appendChild(option);
+        });
+      }
+
+      function filterLocations(query) {
+        if (!query.trim()) {
+          filteredLocations = allLocations;
+        } else {
+          const lowerQuery = query.toLowerCase();
+          filteredLocations = allLocations.filter(loc =>
+            loc.city.toLowerCase().includes(lowerQuery) ||
+            loc.id.toLowerCase().includes(lowerQuery)
+          );
+        }
+        populateSelect(filteredLocations);
+      }
+
+      async function fetchWeather(locationId) {
+        try {
+          const response = await fetch(`/.netlify/functions/weather?location_id=${locationId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch weather data');
+          }
+          const data = await response.json();
+          displayWeather(data);
+        } catch (error) {
+          displayError('无法获取天气数据，请稍后重试');
+        }
+      }
+
+      function displayWeather(data) {
+        weatherDisplay.style.display = 'block';
+        errorDisplay.style.display = 'none';
+
+        document.getElementById('location-name').textContent = data.location.city;
+        document.getElementById('current-temperature').textContent = data.current.temperature;
+        document.getElementById('current-weather').textContent = data.current.weather;
+        document.getElementById('feels-like').textContent = `${data.current.feels_like}°C`;
+        document.getElementById('humidity').textContent = `${data.current.humidity}%`;
+        document.getElementById('wind-speed').textContent = `${data.current.wind_speed} km/h`;
+
+        const forecastList = document.getElementById('forecast-list');
+        forecastList.innerHTML = '';
+        data.forecast.forEach(day => {
+          const item = document.createElement('div');
+          item.className = 'forecast-item';
+          item.innerHTML = `
+            <div class="forecast-item__date">${day.date}</div>
+            <div class="forecast-item__weather">${day.weather}</div>
+            <div class="forecast-item__temp">
+              <span class="temp-max">${day.max_temp}°</span>
+              <span class="temp-sep">/</span>
+              <span class="temp-min">${day.min_temp}°</span>
+            </div>
+          `;
+          forecastList.appendChild(item);
+        });
+      }
+
+      function displayError(message) {
+        weatherDisplay.style.display = 'none';
+        errorDisplay.style.display = 'block';
+        document.getElementById('error-message').textContent = message;
+      }
+
+      // Event listeners
+      citySearch.addEventListener('input', (e) => {
+        filterLocations(e.target.value);
+      });
+
+      citySelect.addEventListener('change', () => {
+        fetchWeather(citySelect.value);
+      });
+
+      refreshBtn.addEventListener('click', () => {
+        fetchWeather(citySelect.value);
+      });
+
+      // Initialize
+      populateSelect(allLocations);
+      fetchWeather('nanchang');
+    </script>
+  </body>
+</html>
+
