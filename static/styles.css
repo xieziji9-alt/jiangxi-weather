@@ -38,7 +38,7 @@ a:hover {
 }
 
 .page-header {
-  padding: 2.75rem 1.5rem 2rem;
+  padding: 2.75rem 1.5rem 3rem;
   text-align: center;
   color: #fff;
   background: transparent;
@@ -53,7 +53,7 @@ a:hover {
 }
 
 .page-subtitle {
-  margin: 0.75rem 0 0;
+  margin: 1rem 0 0;
   font-size: 1.05rem;
   opacity: 0.92;
   font-weight: 400;
@@ -571,7 +571,7 @@ button:active {
 
 @media (max-width: 640px) {
   .page-header {
-    padding: 2.25rem 1rem 1.5rem;
+    padding: 2.25rem 1rem 2.5rem;
   }
 
   .page-title {
