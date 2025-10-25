@@ -228,14 +228,20 @@
 
       async function fetchWeather(locationId) {
         try {
+          console.log('Fetching weather for:', locationId);
           const response = await fetch(`/.netlify/functions/weather?location_id=${locationId}`);
+          console.log('Response status:', response.status);
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
             throw new Error('Failed to fetch weather data');
           }
           const data = await response.json();
+          console.log('Weather data:', data);
           displayWeather(data);
         } catch (error) {
-          displayError('无法获取天气数据，请稍后重试');
+          console.error('Fetch error:', error);
+          displayError('无法获取天气数据，请稍后重试: ' + error.message);
         }
       }
 
