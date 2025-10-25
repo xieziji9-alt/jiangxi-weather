@@ -7,16 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   </head>
   <body>
-    <header class="page-header">
-      <h1 class="page-title">🌤️ 江西省天气预报</h1>
-      <p class="page-subtitle">实时天气 · 未来 5 日预报 · 覆盖全省市县</p>
-    </header>
     <main class="page-main">
       {% block content %}{% endblock %}
     </main>
-    <footer class="page-footer">
-      <small>数据来源：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo 免费天气服务</a></small>
-    </footer>
     {% block scripts %}{% endblock %}
   </body>
 </html>

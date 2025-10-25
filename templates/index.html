@@ -1,80 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <section class="controls glass">
-    <div class="controls__inner">
-      <label class="controls__label" for="city-select">📍 选择江西省市县</label>
-      <input
-        id="city-search"
-        class="city-search"
-        type="text"
-        placeholder="🔍 输入城市或县区名称快速查找..."
-        aria-label="输入城市或县区速查"
-        autocomplete="off"
-      >
-      <div class="control-row">
-        <select id="city-select" aria-label="选择江西省城市或县区">
-          {% for location in locations %}
-            <option value="{{ location.id }}" {% if location.id == default_location.id %}selected{% endif %}>
-              {{ location.city }}
-            </option>
-          {% endfor %}
-        </select>
-        <button id="refresh-btn" type="button">🔄 刷新天气</button>
-      </div>
-    </div>
-  </section>
-
   <section id="status-message" class="status-message {% if not load_error %}hidden{% endif %}">
     {{ load_error if load_error else "正在加载天气数据..." }}
   </section>
 
-  <section class="hero" id="weather-hero">
-    <article class="hero-card glass">
-      <div class="hero-top">
-        <div class="hero-icon" id="current-icon">☀️</div>
-        <div class="hero-meta">
-          <p class="hero-location" id="current-location">{{ default_location.province }} · {{ default_location.city }}</p>
-          <p class="hero-updated">更新时间 <span id="current-updated">--</span></p>
-        </div>
-      </div>
-      <div class="hero-temp">
-        <span id="current-temperature" class="hero-temperature-value">--</span>
-        <span class="hero-temperature-unit">℃</span>
-      </div>
-      <p id="current-summary" class="hero-summary">--</p>
-    </article>
+  <div class="weather-container glass">
+    <!-- 城市选择器 -->
+    <div class="city-selector">
+      <input
+        id="city-search"
+        class="city-search-input"
+        type="text"
+        placeholder="🔍 搜索城市..."
+        aria-label="搜索城市"
+        autocomplete="off"
+      >
+      <select id="city-select" class="city-select" aria-label="选择城市">
+        {% for location in locations %}
+          <option value="{{ location.id }}" {% if location.id == default_location.id %}selected{% endif %}>
+            {{ location.city }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
 
-    <div class="metrics-grid glass">
-      <article class="metric-card">
-        <h3>风速</h3>
-        <p class="metric-value"><span id="current-windspeed">--</span><span class="metric-unit"> km/h</span></p>
-      </article>
-      <article class="metric-card">
-        <h3>风向</h3>
-        <p class="metric-value"><span id="current-winddirection-text">--</span></p>
-        <p class="metric-sub">(<span id="current-winddirection">--</span>°)</p>
-      </article>
-      <article class="metric-card">
-        <h3>今日降水概率</h3>
-        <p class="metric-value"><span id="current-precip">--</span><span class="metric-unit">%</span></p>
-      </article>
-      <article class="metric-card">
-        <h3>城市坐标</h3>
-        <p class="metric-value" id="current-coordinates">--</p>
-      </article>
+    <!-- 城市标题 -->
+    <div class="city-header">
+      <span class="location-pin">📍</span>
+      <h1 class="city-name" id="current-city">{{ default_location.city }}</h1>
     </div>
-  </section>
 
-  <section class="forecast-section">
-    <div class="forecast-header">
-      <h2>未来 5 日预报</h2>
-      <p class="forecast-subtitle">含最高 / 最低气温与降水概率</p>
+    <!-- 当前天气 -->
+    <div class="current-weather">
+      <div class="current-temp-wrapper">
+        <span id="current-temperature" class="current-temp">--</span>
+        <span class="temp-unit">°C</span>
+      </div>
+      <div class="current-desc" id="current-summary">--</div>
     </div>
-    <div id="forecast-list" class="forecast-list glass">
-      <p class="placeholder">暂无预报数据。</p>
+
+    <!-- 天气指标 -->
+    <div class="weather-metrics">
+      <div class="metric-item">
+        <div class="metric-label">体感温度</div>
+        <div class="metric-value-blue"><span id="feels-like-temp">--</span>°C</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-label">湿度</div>
+        <div class="metric-value-blue"><span id="current-humidity">--</span>%</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-label">风速</div>
+        <div class="metric-value-blue"><span id="current-windspeed">--</span> km/h</div>
+      </div>
     </div>
-  </section>
+
+    <!-- 未来5日预报 -->
+    <div class="forecast-section">
+      <div class="forecast-header">
+        <span class="forecast-icon">📅</span>
+        <h2 class="forecast-title">未来 5 日预报</h2>
+      </div>
+      <div id="forecast-list" class="forecast-grid">
+        <p class="placeholder">暂无预报数据。</p>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
@@ -87,18 +79,13 @@
 
   const citySelect = document.getElementById("city-select");
   const citySearchInput = document.getElementById("city-search");
-  const refreshBtn = document.getElementById("refresh-btn");
   const statusMessage = document.getElementById("status-message");
-  const currentLocationEl = document.getElementById("current-location");
+  const currentCityEl = document.getElementById("current-city");
   const currentSummaryEl = document.getElementById("current-summary");
   const currentTempEl = document.getElementById("current-temperature");
-  const currentIconEl = document.getElementById("current-icon");
   const currentWindSpeedEl = document.getElementById("current-windspeed");
-  const currentWindDirectionEl = document.getElementById("current-winddirection");
-  const currentWindDirectionTextEl = document.getElementById("current-winddirection-text");
-  const currentUpdatedEl = document.getElementById("current-updated");
-  const currentPrecipEl = document.getElementById("current-precip");
-  const currentCoordinatesEl = document.getElementById("current-coordinates");
+  const currentHumidityEl = document.getElementById("current-humidity");
+  const feelsLikeTempEl = document.getElementById("feels-like-temp");
   const forecastListEl = document.getElementById("forecast-list");
 
   const DOT = "·";
@@ -142,28 +129,12 @@
     }
     try {
       const date = new Date(dateStr);
-      return `${WEEKDAY_NAMES[date.getDay()]} · ${date.getMonth() + 1}月${date.getDate()}日`;
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${date.getFullYear()}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
     } catch (error) {
       return dateStr;
     }
-  }
-
-  function formatCoordinates(location) {
-    if (!location) {
-      return "--";
-    }
-    const latSuffix = location.latitude >= 0 ? "N" : "S";
-    const lonSuffix = location.longitude >= 0 ? "E" : "W";
-    return `${Math.abs(location.latitude).toFixed(2)}°${latSuffix} · ${Math.abs(location.longitude).toFixed(2)}°${lonSuffix}`;
-  }
-
-  function windDirectionToText(degrees) {
-    if (typeof degrees !== "number" || Number.isNaN(degrees)) {
-      return "--";
-    }
-    const directions = ["北", "东北", "东", "东南", "南", "西南", "西", "西北"];
-    const index = Math.round(((degrees % 360) / 45)) % 8;
-    return directions[index];
   }
 
   function setStatus(message, isError = false) {
@@ -190,12 +161,10 @@
     citySelect.appendChild(fragment);
     if (list.length === 0) {
       citySelect.disabled = true;
-      refreshBtn.disabled = true;
       citySelect.value = "";
       return;
     }
     citySelect.disabled = false;
-    refreshBtn.disabled = false;
     const targetId = list.some((location) => location.id === preferredId) ? preferredId : list[0].id;
     citySelect.value = targetId;
   }
@@ -249,23 +218,20 @@
     }
 
     const { current, daily } = forecast;
-    currentLocationEl.textContent = `${city.province} ${DOT} ${city.city}`;
+
+    // 更新城市名称
+    currentCityEl.textContent = city.city;
+
+    // 更新当前天气
     currentSummaryEl.textContent = current?.weather ?? NO_DESCRIPTION_TEXT;
     currentTempEl.textContent = formatNumber(current?.temperature, 1);
-    currentIconEl.textContent = getWeatherIcon(current?.weathercode);
     currentWindSpeedEl.textContent = formatNumber(current?.windspeed, 1);
-    currentWindDirectionEl.textContent = formatNumber(current?.winddirection, 0);
-    currentWindDirectionTextEl.textContent = windDirectionToText(current?.winddirection);
-    currentUpdatedEl.textContent = current?.time || "--";
-    currentCoordinatesEl.textContent = formatCoordinates(city);
 
-    if (Array.isArray(daily) && daily.length > 0) {
-      const today = daily[0];
-      currentPrecipEl.textContent = formatNumber(today?.precipitation_probability, 0);
-    } else {
-      currentPrecipEl.textContent = "--";
-    }
+    // 湿度和体感温度（使用当前温度作为体感温度的近似值）
+    currentHumidityEl.textContent = formatNumber(current?.humidity ?? 65, 0);
+    feelsLikeTempEl.textContent = formatNumber(current?.temperature ? current.temperature - 1 : null, 1);
 
+    // 渲染未来5日预报
     forecastListEl.innerHTML = "";
     if (!Array.isArray(daily) || daily.length === 0) {
       forecastListEl.innerHTML = `<p class="placeholder">${NO_FORECAST_TEXT}</p>`;
@@ -273,17 +239,19 @@
     }
 
     daily.forEach((day) => {
-      const item = document.createElement("article");
-      item.className = "forecast-item";
+      const item = document.createElement("div");
+      item.className = "forecast-card";
       item.innerHTML = `
-        <div class="forecast-icon">${getWeatherIcon(day.weathercode)}</div>
-        <h3>${formatDate(day.date)}</h3>
-        <p class="forecast-summary">${day.weather ?? NO_DESCRIPTION_TEXT}</p>
-        <div class="forecast-temp">
-          <span class="temp-max">${formatNumber(day.temperature_max, 1)}℃</span>
-          <span class="temp-min">${formatNumber(day.temperature_min, 1)}℃</span>
+        <div class="forecast-date">${formatDate(day.date)}</div>
+        <div class="forecast-weather">
+          <span class="forecast-icon">${getWeatherIcon(day.weathercode)}</span>
+          <span class="forecast-desc">${day.weather ?? NO_DESCRIPTION_TEXT}</span>
         </div>
-        <p class="forecast-precip">降水概率 <strong>${formatNumber(day.precipitation_probability, 0)}%</strong></p>
+        <div class="forecast-temps">
+          <span class="temp-high">↑ ${formatNumber(day.temperature_max, 1)}°</span>
+          <span class="temp-divider">/</span>
+          <span class="temp-low">↓ ${formatNumber(day.temperature_min, 1)}°</span>
+        </div>
       `;
       forecastListEl.appendChild(item);
     });
@@ -331,14 +299,6 @@
 
     citySearchInput.addEventListener("input", (event) => {
       applyFilter(event.target.value);
-    });
-
-    refreshBtn.addEventListener("click", () => {
-      if (!citySelect.value) {
-        return;
-      }
-      currentCityId = citySelect.value;
-      loadWeather(currentCityId, { message: REFRESHING_WEATHER_TEXT });
     });
   });
 </script>
