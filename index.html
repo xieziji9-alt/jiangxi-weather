@@ -225,18 +225,181 @@
         populateSelect(filteredLocations);
       }
 
+      // Coordinates for major cities in Jiangxi
+      const COORDINATES = {
+        'nanchang': { lat: 28.6829, lon: 115.8579 },
+        'donghu': { lat: 28.6850, lon: 115.8990 },
+        'xihu': { lat: 28.6570, lon: 115.8770 },
+        'qingyunpu': { lat: 28.6210, lon: 115.9250 },
+        'qingshanhu': { lat: 28.6820, lon: 115.9620 },
+        'xinjian': { lat: 28.6920, lon: 115.8150 },
+        'nanchang_county': { lat: 28.5450, lon: 115.9430 },
+        'anyi': { lat: 28.8450, lon: 115.5480 },
+        'jinxian': { lat: 28.3760, lon: 116.2420 },
+        'jiujiang': { lat: 29.7050, lon: 116.0010 },
+        'xunyang': { lat: 29.7270, lon: 115.9900 },
+        'lianxi': { lat: 29.6700, lon: 115.9850 },
+        'chaisang': { lat: 29.6000, lon: 115.9110 },
+        'wuning': { lat: 29.2560, lon: 115.1010 },
+        'xiushui': { lat: 29.0250, lon: 114.5470 },
+        'yongxiu': { lat: 29.0220, lon: 115.8090 },
+        'dean': { lat: 29.3130, lon: 115.7560 },
+        'duchang': { lat: 29.2730, lon: 116.2040 },
+        'hukou': { lat: 29.7410, lon: 116.2520 },
+        'pengze': { lat: 29.8960, lon: 116.5490 },
+        'ruichang': { lat: 29.6740, lon: 115.6810 },
+        'gongqingcheng': { lat: 29.2480, lon: 115.8040 },
+        'lushan': { lat: 29.4480, lon: 115.9820 },
+        'shangrao': { lat: 28.4540, lon: 117.9430 },
+        'xinzhou': { lat: 28.4310, lon: 117.9660 },
+        'guangfeng': { lat: 28.4360, lon: 118.1910 },
+        'guangxin': { lat: 28.4500, lon: 117.9700 },
+        'yugan': { lat: 28.6950, lon: 116.6960 },
+        'poyang': { lat: 29.0110, lon: 116.6730 },
+        'wannian': { lat: 28.6950, lon: 117.0690 },
+        'wuyuan': { lat: 29.2450, lon: 117.8610 },
+        'dexing': { lat: 28.9470, lon: 117.5790 },
+        'yiyang': { lat: 28.3740, lon: 117.4590 },
+        'hengfeng': { lat: 28.4070, lon: 117.5960 },
+        'qianshan': { lat: 28.3150, lon: 117.7090 },
+        'yushan': { lat: 28.6820, lon: 118.2450 },
+        'ganzhou': { lat: 25.8310, lon: 114.9350 },
+        'zhanggong': { lat: 25.8170, lon: 114.9350 },
+        'nankang': { lat: 25.6630, lon: 114.7650 },
+        'ganxian': { lat: 25.8600, lon: 115.0120 },
+        'xinfeng': { lat: 25.3690, lon: 114.9090 },
+        'dayu': { lat: 25.2940, lon: 114.3620 },
+        'shangyou': { lat: 25.7880, lon: 114.5500 },
+        'chongyi': { lat: 25.6810, lon: 114.3080 },
+        'anyuan': { lat: 25.1370, lon: 115.3930 },
+        'longnan': { lat: 24.9110, lon: 114.7890 },
+        'dingnan': { lat: 24.7840, lon: 115.0280 },
+        'quannan': { lat: 24.7420, lon: 114.5300 },
+        'ningdu': { lat: 26.4700, lon: 116.0090 },
+        'yudu': { lat: 25.9520, lon: 115.4150 },
+        'xingguo': { lat: 26.3380, lon: 115.3630 },
+        'huichang': { lat: 25.5990, lon: 115.7860 },
+        'xunwu': { lat: 24.9540, lon: 115.6490 },
+        'shicheng': { lat: 26.3150, lon: 116.3440 },
+        'ruijin': { lat: 25.8850, lon: 116.0270 },
+        'jian': { lat: 27.1110, lon: 114.9860 },
+        'jizhou': { lat: 27.1440, lon: 115.0000 },
+        'qingyuan': { lat: 27.0820, lon: 115.0140 },
+        'jishui': { lat: 27.2290, lon: 115.1350 },
+        'jian_county': { lat: 27.0400, lon: 114.9080 },
+        'xingan': { lat: 27.7380, lon: 115.3950 },
+        'yongfeng': { lat: 27.3180, lon: 115.4420 },
+        'taihe': { lat: 26.7910, lon: 114.9080 },
+        'suichuan': { lat: 26.3130, lon: 114.5200 },
+        'wanan': { lat: 26.4580, lon: 114.7870 },
+        'anfu': { lat: 27.3930, lon: 114.6200 },
+        'yongxin': { lat: 26.9450, lon: 114.2430 },
+        'jinggangshan': { lat: 26.7480, lon: 114.1890 },
+        'yichun': { lat: 27.8150, lon: 114.4170 },
+        'yuanzhou': { lat: 27.7970, lon: 114.4230 },
+        'fengxin': { lat: 28.6920, lon: 115.4000 },
+        'wanzai': { lat: 28.1060, lon: 114.4450 },
+        'shanggao': { lat: 28.2340, lon: 114.9250 },
+        'yifeng': { lat: 28.3940, lon: 114.7800 },
+        'jing_an': { lat: 28.8610, lon: 115.3620 },
+        'tonggu': { lat: 28.5230, lon: 114.3710 },
+        'fengcheng': { lat: 28.1590, lon: 115.7710 },
+        'zhangshu': { lat: 28.0530, lon: 115.5460 },
+        'gaoan': { lat: 28.4170, lon: 115.3750 },
+        'fuzhou': { lat: 27.9490, lon: 116.3580 },
+        'linchuan': { lat: 27.9770, lon: 116.3130 },
+        'dongxiang': { lat: 28.2360, lon: 116.5900 },
+        'nancheng': { lat: 27.5540, lon: 116.6270 },
+        'lichuan': { lat: 27.2790, lon: 116.9070 },
+        'nanfeng': { lat: 27.2180, lon: 116.5260 },
+        'chongren': { lat: 27.7540, lon: 116.0750 },
+        'lean': { lat: 27.4290, lon: 115.8300 },
+        'yihuang': { lat: 27.5540, lon: 116.2360 },
+        'jinxi': { lat: 27.9190, lon: 116.7550 },
+        'zixi': { lat: 27.7060, lon: 117.0690 },
+        'guangchang': { lat: 26.8440, lon: 116.3370 },
+        'pingxiang': { lat: 27.6230, lon: 113.8520 },
+        'anyuan_px': { lat: 27.6150, lon: 113.8700 },
+        'xiangdong': { lat: 27.6390, lon: 113.7330 },
+        'lianhua': { lat: 27.1270, lon: 113.9620 },
+        'shangli': { lat: 27.8800, lon: 113.7950 },
+        'luxi': { lat: 27.6300, lon: 114.0290 },
+        'xinyu': { lat: 27.8180, lon: 114.9170 },
+        'yushui': { lat: 27.8000, lon: 114.9440 },
+        'fenyi': { lat: 27.8150, lon: 114.6750 },
+        'yingtan': { lat: 28.2380, lon: 117.0690 },
+        'yujiang': { lat: 28.2040, lon: 116.8190 },
+        'guixi': { lat: 28.2920, lon: 117.2450 },
+        'jingdezhen': { lat: 29.2686, lon: 117.1786 },
+        'changjiang': { lat: 29.2730, lon: 117.1750 },
+        'zhushan': { lat: 29.3010, lon: 117.2140 },
+        'fuliang': { lat: 29.3380, lon: 117.2150 },
+        'leping': { lat: 28.9620, lon: 117.1300 }
+      };
+
+      function getWeatherDescription(code) {
+        const weatherCodes = {
+          0: '晴天',
+          1: '晴朗', 2: '少云', 3: '多云',
+          45: '有雾', 48: '雾凇',
+          51: '小雨', 53: '中雨', 55: '大雨',
+          61: '小雨', 63: '中雨', 65: '大雨',
+          71: '小雪', 73: '中雪', 75: '大雪',
+          77: '米雪',
+          80: '阵雨', 81: '阵雨', 82: '暴雨',
+          85: '阵雪', 86: '暴雪',
+          95: '雷暴', 96: '雷暴伴冰雹', 99: '雷暴伴冰雹'
+        };
+        return weatherCodes[code] || '未知';
+      }
+
       async function fetchWeather(locationId) {
         try {
-          console.log('Fetching weather for:', locationId);
-          const response = await fetch(`/.netlify/functions/weather?location_id=${locationId}`);
-          console.log('Response status:', response.status);
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error('Failed to fetch weather data');
+          const location = LOCATIONS.find(loc => loc.id === locationId);
+          if (!location) {
+            throw new Error('未找到该城市');
           }
-          const data = await response.json();
-          console.log('Weather data:', data);
+
+          const coords = COORDINATES[locationId];
+          if (!coords) {
+            throw new Error('该城市暂无天气数据');
+          }
+
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia/Shanghai&forecast_days=6`;
+
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error('天气服务暂时不可用');
+          }
+
+          const apiData = await response.json();
+
+          const data = {
+            location: {
+              province: location.province,
+              city: location.city
+            },
+            current: {
+              temperature: Math.round(apiData.current.temperature_2m),
+              weather: getWeatherDescription(apiData.current.weather_code),
+              feels_like: Math.round(apiData.current.apparent_temperature),
+              humidity: apiData.current.relative_humidity_2m,
+              wind_speed: Math.round(apiData.current.wind_speed_10m)
+            },
+            forecast: []
+          };
+
+          for (let i = 1; i < 6; i++) {
+            const date = new Date(apiData.daily.time[i]);
+            const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
+            data.forecast.push({
+              date: dateStr,
+              weather: getWeatherDescription(apiData.daily.weather_code[i]),
+              max_temp: Math.round(apiData.daily.temperature_2m_max[i]),
+              min_temp: Math.round(apiData.daily.temperature_2m_min[i])
+            });
+          }
+
           displayWeather(data);
         } catch (error) {
           console.error('Fetch error:', error);
