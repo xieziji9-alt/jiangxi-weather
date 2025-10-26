@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江西天气</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        select {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        select:focus { outline: none; border-color: #667eea; }
+        .weather-info { text-align: center; display: none; }
+        .weather-info.show { display: block; }
+        .city-name { font-size: 24px; color: #333; margin-bottom: 10px; }
+        .temperature { font-size: 72px; font-weight: 700; color: #667eea; margin: 20px 0; }
+        .weather-desc { font-size: 20px; color: #666; margin-bottom: 30px; }
+        .details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .detail-item { background: #f5f5f5; padding: 15px; border-radius: 12px; text-align: center; }
+        .detail-label { font-size: 12px; color: #999; display: block; margin-bottom: 5px; }
+        .detail-value { font-size: 16px; color: #333; font-weight: 600; }
+        .forecast-title { font-size: 18px; color: #333; margin-bottom: 15px; font-weight: 600; }
+        .forecast-list { display: flex; flex-direction: column; gap: 10px; }
+        .forecast-item { display: flex; justify-content: space-between; background: #f5f5f5; padding: 12px 16px; border-radius: 12px; }
+        .forecast-date { font-size: 14px; color: #666; flex: 1; }
+        .forecast-weather { font-size: 14px; color: #999; flex: 1; text-align: center; }
+        .forecast-temp { font-size: 14px; color: #333; font-weight: 600; flex: 1; text-align: right; }
+        .loading { text-align: center; color: #999; padding: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🌤️ 江西天气</h1>
+        <select id="citySelect"><option value="">选择城市...</option></select>
+        <div id="weatherInfo" class="weather-info">
+            <div class="city-name" id="cityName">--</div>
+            <div class="temperature" id="temperature">--°</div>
+            <div class="weather-desc" id="weatherDesc">--</div>
+            <div class="details">
+                <div class="detail-item"><span class="detail-label">体感</span><span class="detail-value" id="feelsLike">--°</span></div>
+                <div class="detail-item"><span class="detail-label">湿度</span><span class="detail-value" id="humidity">--%</span></div>
+                <div class="detail-item"><span class="detail-label">风速</span><span class="detail-value" id="windSpeed">--</span></div>
+            </div>
+            <div class="forecast-title">未来5天预报</div>
+            <div class="forecast-list" id="forecastList"></div>
+        </div>
+        <div id="loading" class="loading" style="display: none;">加载中...</div>
+    </div>
+    <script>
+        const CITIES = {
+            '南昌市': { lat: 28.6829, lon: 115.8579 }, '九江市': { lat: 29.7050, lon: 116.0014 },
+            '景德镇市': { lat: 29.2742, lon: 117.1780 }, '萍乡市': { lat: 27.6229, lon: 113.8520 },
+            '新余市': { lat: 27.8175, lon: 114.9167 }, '鹰潭市': { lat: 28.2386, lon: 117.0692 },
+            '赣州市': { lat: 25.8311, lon: 114.9335 }, '吉安市': { lat: 27.1138, lon: 114.9926 },
+            '宜春市': { lat: 27.8153, lon: 114.4167 }, '抚州市': { lat: 27.9484, lon: 116.3583 },
+            '上饶市': { lat: 28.4544, lon: 117.9434 }
+        };
+        function getWeatherDesc(code) {
+            const w = { 0: '晴天', 1: '晴天', 2: '多云', 3: '阴天', 45: '雾', 48: '雾凇',
+                51: '小雨', 53: '中雨', 55: '大雨', 61: '小雨', 63: '中雨', 65: '大雨',
+                71: '小雪', 73: '中雪', 75: '大雪', 80: '阵雨', 81: '阵雨', 82: '暴雨',
+                95: '雷暴', 96: '雷暴', 99: '雷暴' };
+            return w[code] || '未知';
+        }
+        const select = document.getElementById('citySelect');
+        Object.keys(CITIES).forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            select.appendChild(option);
+        });
+        async function fetchWeather(city) {
+            const coords = CITIES[city];
+            if (!coords) return;
+            const loading = document.getElementById('loading');
+            const weatherInfo = document.getElementById('weatherInfo');
+            loading.style.display = 'block';
+            weatherInfo.classList.remove('show');
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=Asia/Shanghai&forecast_days=6`;
+                const response = await fetch(url);
+                const data = await response.json();
+                document.getElementById('cityName').textContent = city;
+                document.getElementById('temperature').textContent = Math.round(data.current.temperature_2m) + '°';
+                document.getElementById('weatherDesc').textContent = getWeatherDesc(data.current.weather_code);
+                document.getElementById('feelsLike').textContent = Math.round(data.current.apparent_temperature) + '°';
+                document.getElementById('humidity').textContent = data.current.relative_humidity_2m + '%';
+                document.getElementById('windSpeed').textContent = Math.round(data.current.wind_speed_10m) + 'km/h';
+                const forecastList = document.getElementById('forecastList');
+                forecastList.innerHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    const date = new Date(data.daily.time[i]);
+                    const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
+                    const weather = getWeatherDesc(data.daily.weather_code[i]);
+                    const tempMax = Math.round(data.daily.temperature_2m_max[i]);
+                    const tempMin = Math.round(data.daily.temperature_2m_min[i]);
+                    const item = document.createElement('div');
+                    item.className = 'forecast-item';
+                    item.innerHTML = `<div class="forecast-date">${dateStr}</div><div class="forecast-weather">${weather}</div><div class="forecast-temp">${tempMin}° / ${tempMax}°</div>`;
+                    forecastList.appendChild(item);
+                }
+                loading.style.display = 'none';
+                weatherInfo.classList.add('show');
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('获取天气数据失败，请稍后重试');
+            }
+        }
+        select.addEventListener('change', (e) => { if (e.target.value) fetchWeather(e.target.value); });
+        select.value = '南昌市';
+        fetchWeather('南昌市');
+    </script>
+</body>
+</html>
+
